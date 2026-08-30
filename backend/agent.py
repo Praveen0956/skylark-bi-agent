@@ -35,7 +35,7 @@ from monday_client import MondayClient
 from data_normalizer import normalize_items
 from analysis import filter_records, group_and_aggregate, top_n, list_distinct_values
 
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gemini-2.5-flash"
 CACHE_TTL_SECONDS = 60
 
 _cache: dict[str, tuple[float, list[dict]]] = {}
