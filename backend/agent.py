@@ -61,8 +61,8 @@ def _get_board_records(board_key: str, board_id: str) -> list[dict]:
     _cache[board_key] = (now, records)
     return records
 
-
 def _board_id_for(board_key: str) -> str:
+    board_key = _normalize_board(board_key)
     mapping = {
         "deals": os.environ.get("DEALS_BOARD_ID"),
         "work_orders": os.environ.get("WORK_ORDERS_BOARD_ID"),
@@ -71,6 +71,22 @@ def _board_id_for(board_key: str) -> str:
     if not board_id:
         raise ValueError(f"No board ID configured for '{board_key}'")
     return board_id
+
+
+def _normalize_board(board: str) -> str:
+    """Defensively normalize the 'board' argument. The LLM occasionally
+    emits a slightly malformed value (e.g. extra text appended alongside
+    the enum value) rather than a clean 'deals'/'work_orders' string.
+    Rather than raising and breaking the whole turn, extract the intended
+    board from whatever text was passed."""
+    if not isinstance(board, str):
+        return board
+    low = board.lower()
+    if "work_order" in low or "work order" in low:
+        return "work_orders"
+    if "deal" in low:
+        return "deals"
+    return board.strip()
 
 
 # --- Tool functions -------------------------------------------------------
@@ -89,6 +105,7 @@ def list_columns(board: str) -> dict:
     Args:
         board: Either "deals" or "work_orders".
     """
+    board = _normalize_board(board)
     board_id = _board_id_for(board)
     records = _get_board_records(board, board_id)
     cols = sorted({k for r in records for k in r.keys() if k != "id"})
@@ -104,6 +121,7 @@ def list_distinct(board: str, column: str) -> dict:
         board: Either "deals" or "work_orders".
         column: The column name to list distinct values for.
     """
+    board = _normalize_board(board)
     board_id = _board_id_for(board)
     records = _get_board_records(board, board_id)
     return {"values": list_distinct_values(records, column)}
@@ -128,6 +146,7 @@ def query_aggregate(
         filters_json: Optional JSON object string of exact-match filters,
             e.g. '{"Sector": "Energy"}'. Use "{}" for no filter.
     """
+    board = _normalize_board(board)
     board_id = _board_id_for(board)
     records = _get_board_records(board, board_id)
     try:
@@ -156,6 +175,7 @@ def top_records(
         filters_json: Optional JSON object string of exact-match filters,
             e.g. '{"Sector": "Energy"}'. Use "{}" for no filter.
     """
+    board = _normalize_board(board)
     board_id = _board_id_for(board)
     records = _get_board_records(board, board_id)
     try:
