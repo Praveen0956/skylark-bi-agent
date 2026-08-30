@@ -137,7 +137,6 @@ def query_aggregate(
     filtered = filter_records(records, filters)
     return group_and_aggregate(filtered, group_by, value_column, agg)
 
-
 def top_records(
     board: str,
     sort_column: str,
@@ -163,10 +162,17 @@ def top_records(
         filters = json.loads(filters_json) if filters_json else {}
     except json.JSONDecodeError:
         filters = {}
+    # Gemini's function-calling may pass numeric/bool args as strings;
+    # coerce defensively so slicing/sorting never breaks on type.
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        n = 5
+    if isinstance(descending, str):
+        descending = descending.strip().lower() not in ("false", "0", "")
     filtered = filter_records(records, filters)
     results = top_n(filtered, sort_column, n, descending)
     return {"records": results}
-
 
 TOOL_FUNCTIONS = [list_columns, list_distinct, query_aggregate, top_records]
 
