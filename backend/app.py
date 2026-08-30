@@ -21,9 +21,8 @@ REQUIRED_ENV_VARS = [
     "MONDAY_API_TOKEN",
     "WORK_ORDERS_BOARD_ID",
     "DEALS_BOARD_ID",
-    "ANTHROPIC_API_KEY",
+    "GEMINI_API_KEY",
 ]
-
 
 class ChatRequest(BaseModel):
     message: str
