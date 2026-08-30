@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: skylark-bi-agent
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: MONDAY_API_TOKEN
+        sync: false
+      - key: WORK_ORDERS_BOARD_ID
+        sync: false
+      - key: DEALS_BOARD_ID
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
